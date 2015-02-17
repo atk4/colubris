@@ -113,6 +113,24 @@ app_module.service( 'Requirement', [ '$rootScope','$http','API', function( $root
             console.log('------> Show');
             $rootScope.$broadcast('form.to_fixed_position',service.requirements[index]);
         },
+        saveOrder: function(element,attr) {
+            console.log('------> saveOrder');
+
+            var ids = '';
+            $('#'+element+' tr').each(function(i,e){
+
+                if (i != 0) {
+                    ids = ids  + ",";
+                }
+                ids = ids  + $(e).attr(attr);
+
+            });
+
+            console.log(ids);
+
+            API.updateOrder('requirement','updateOrder',null,{ids:ids},function(obj){console.log('*** order updated');});
+
+        },
         cancel: function() {
             console.log('------> cencel');
             this.restoreReqv();
