@@ -39,4 +39,18 @@ class endpoint_v1_requirement extends Endpoint_v1_General {
         $quote_id = $this->checkGetParameter('quote_id'); // method from trait
         return $quote_id;
     }
+
+    private function post_updateOrder(){
+        $ids = $this->checkPostParameter('ids');;
+        $ids_arr = [];
+        foreach (explode(',',$ids) as $k=>$v) {
+            $ids_arr[$v] = $k;
+        }
+        $this->model->prepareForUpdate($this->app->current_user);
+        $this->model->addCondition('id','in',$ids);
+
+        foreach ($this->model as $row) {
+            $row->set('order',$ids_arr[$row->id])->saveAndUnload();
+        }
+    }
 }

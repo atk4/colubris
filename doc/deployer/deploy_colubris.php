@@ -24,10 +24,6 @@ $t
 $server_deploy_folder = time();
 $base_path = '/www/colubris43.agile55.com';
 
-//$migr = new Service_AgileToolkit_Migrator('mysql -uvadym -p1 -hlocalhost colubris');
-//$migr->setMigrationPath($base_path.'/releases/'.$server_deploy_folder.'/doc/dbupdates');
-//$migr->setMigrationStatusesPath($base_path.'/shared/db');
-
 $s1 = new Server('Celestial Colubris43 project installation');
 $s1->setTransport($t);
 $s1->setBasePath($base_path);
@@ -90,7 +86,7 @@ $s1->task('cmd',"php composer.phar install");
 // links
 $s1->task('cmd',"cd $base_path/releases/$server_deploy_folder");
 $s1->task('cmd',"cd public");
-$s1->task('cmd',"ln -s ../api api");
+//$s1->task('cmd',"ln -s ../api api");
 $s1->task('cmd',"mkdir rvadym");
 $s1->task('cmd',"cd rvadym");
 $s1->task('cmd',"ln -sf ../../addons/rvadym/cms/public/ cms");
@@ -106,6 +102,11 @@ $s1->task('cmd',"ln -s ../../../shared/config.php config.php");
 $s1->task('cmd',"cd ..");
 $s1->task('cmd',"cd $base_path/releases/$server_deploy_folder/public/");
 $s1->task('cmd',"ln -s ../vendor/atk4/atk4/public/atk4/");
+//migrator
+$s1->task('cmd',"cd $base_path/releases/$server_deploy_folder");
+$s1->task('cmd',"cp -n $base_path/releases/$server_deploy_folder/phinx-distrib.yml $base_path/shared/phinx.yml");
+$s1->task('cmd',"ln -s vendor/bin/phinx phinx");
+$s1->task('cmd',"ln -s ../../shared/phinx.yml .");
 
 // final
 $s1->task('cmd',"cd $base_path");

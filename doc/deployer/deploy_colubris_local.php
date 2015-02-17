@@ -80,7 +80,7 @@ $s1->task('cmd',"php composer.phar install");
 // links
 $s1->task('cmd',"cd $base_path/releases/$server_deploy_folder");
 $s1->task('cmd',"cd public");
-$s1->task('cmd',"ln -s ../api api");
+//$s1->task('cmd',"ln -s ../api api");
 $s1->task('cmd',"mkdir rvadym");
 $s1->task('cmd',"cd rvadym");
 $s1->task('cmd',"ln -sf ../../addons/rvadym/cms/public/ cms");
