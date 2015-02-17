@@ -1,0 +1,13 @@
+<h3>Projects:</h3>
+<div class="atk-box-small default"  ng-repeat="proj in projects track by $index"  ng-click="projectSelect(proj, $event)">
+    <div class="atk-cells atk-push small">
+        <div class="atk-cell atk-valign-top">
+            <div class="atk-label atk-effect-info">{{$index}} (ID#{{proj.id}})</div>
+        </div>
+        <div class="atk-cell atk-jackscrew">
+            <div class="atk-label atk-effect-warning" style="white-space: pre-wrap" >{{proj.name}}</div>
+        </div>
+    </div>
+    <div>Description: {{proj.descr}}</div>
+    <div>Spent time: {{proj.spent_time}}</div>
+</div>

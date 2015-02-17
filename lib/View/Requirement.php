@@ -1,11 +1,11 @@
 <?php
-class View_Requirement extends AbstractView {
+class View_Requirement extends View {
     private $req;
     private $quote;
 
     function prepareData($requirement_id){
-        $this->req=$this->add('Model_Requirement')->load($requirement_id);
-        $this->quote=$this->add('Model_Quote')->load($this->req->get('quote_id'));
+        $this->req=$this->add('Model_Requirement')->notDeleted()->load($requirement_id);
+        $this->quote=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($this->req->get('quote_id'));
         $_GET['project_id']=$this->quote->get('project_id');
     }
 
@@ -21,7 +21,7 @@ class View_Requirement extends AbstractView {
                 ),
                 2 => array(
                     'name' => 'Quote',
-                    'url' => $this->api->url('quotes/rfq/requirements',array('quote_id'=>$this->quote->get('id'))),
+                    'url' => $this->api->url('quotes/'.$this->quote->get('id')),
                 ),
                 3 => array(
                     'name' => 'Details of requirement',
@@ -67,7 +67,7 @@ class View_Requirement extends AbstractView {
         $gr = $left->add('Grid_Quote');
         $gr->addColumn('text','name','');
         $gr->addColumn('text','value','Info');
-        $gr->addFormatter('value','wrap');
+        $gr->setFormatter('value','wrap');
         $gr->addFormatter('value','download');
         $gr->setSource($source);
 
@@ -81,7 +81,7 @@ class View_Requirement extends AbstractView {
 
         $cr=$this->add('CRUD', array('grid_class'=>'Grid_Reqcomments'));
 
-        $m=$this->add('Model_Reqcomment')
+        $m=$this->add('Model_Reqcomment')->notDeleted()
             ->addCondition('requirement_id',$this->req['id']);
         $cr->setModel($m,
             array('text','file_id'),
@@ -93,7 +93,7 @@ class View_Requirement extends AbstractView {
             //$cr->grid->setFormatter('text','text');
         }
 
-        $this->tasks=$this->add('Model_Task_RestrictedUsers');
+        $this->tasks=$this->add('Model_Task')->restrictedUsers();
         $this->tasks->addCondition('project_id',$this->req['project_id']);
         $this->tasks->addCondition('requirement_id',$this->req['id']);
         $this->addTasksCRUD($this);
@@ -125,8 +125,8 @@ class View_Requirement extends AbstractView {
 
         $cr->setModel(
             $this->tasks,
-            $this->tasks->whatFieldsUserCanEdit($user),
-            $this->tasks->whatFieldsUserCanSee($user,$this->quote)
+            $this->app->user_access->whatTaskFieldsUserCanEdit(),
+            $this->app->user_access->whatTaskFieldsUserCanSee($this->quote)
         );
     }
 

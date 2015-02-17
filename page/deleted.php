@@ -5,9 +5,22 @@ class page_deleted extends Page {
         parent::init();
 
         // Checking client's read permission to this quote and redirect to denied if required
-        if( !$this->api->currentUser()->canSeeDeleted() ){
+        if( !$this->app->model_user_rights->canSeeDeleted() ){
             throw $this->exception('You cannot see this page','Exception_Denied');
         }
+
+        $this->title = 'Deleted';
+        $this->add('x_bread_crumb/View_BC',array(
+            'routes' => array(
+                0 => array(
+                    'name' => 'Home',
+                ),
+                1 => array(
+                    'name' => 'Deleted',
+                    'url' => 'deleted',
+                ),
+            )
+        ),'bread_crumb');
     }
 
     function page_index() {
@@ -15,7 +28,7 @@ class page_deleted extends Page {
     }
 
     function page_projects(){
-        $m=$this->add('Model_Project_Deleted');
+        $m=$this->add('Model_Project')->deleted();
 
         $cr=$this->add('CRUD',array(
                 'grid_class'=>'Grid',
@@ -33,7 +46,7 @@ class page_deleted extends Page {
 
             $cr->grid->addColumn('button','restore');
             if ($_GET['restore']) {
-                $m=$this->add('Model_Project_Base');
+                $m=$this->add('Model_Project')->getThisOrganisation();
                 $o=$m->load($_GET['restore']);
                 $o->set('is_deleted',false);
                 $o->save();
@@ -43,7 +56,7 @@ class page_deleted extends Page {
     }
 
     function page_quotes(){
-        $m=$this->add('Model_Quote_Deleted');
+        $m=$this->add('Model_Quote')->deleted()->getThisOrganisation();
 
         $cr=$this->add('CRUD',array(
                 'grid_class'=>'Grid',
@@ -61,7 +74,7 @@ class page_deleted extends Page {
 
             $cr->grid->addColumn('button','restore');
             if ($_GET['restore']) {
-                $m=$this->add('Model_Quote_Base');
+                $m=$this->add('Model_Quote')->getThisOrganisation();
                 $o=$m->load($_GET['restore']);
                 $o->set('is_deleted',false);
                 $o->save();
@@ -71,7 +84,7 @@ class page_deleted extends Page {
     }
 
     function page_tasks(){
-        $m=$this->add('Model_Task_Deleted');
+        $m = $this->add('Model_Task')->deleted();
 
         $cr=$this->add('CRUD',array(
                 'grid_class'=>'Grid',
@@ -89,8 +102,8 @@ class page_deleted extends Page {
 
             $cr->grid->addColumn('button','restore');
             if ($_GET['restore']) {
-                $m=$this->add('Model_Task_Base');
-                $o=$m->load($_GET['restore']);
+                $m = $this->add('Model_Task')->Base();
+                $o = $m->load($_GET['restore']);
                 $o->set('is_deleted',false);
                 $o->save();
                 $cr->grid->js('reload')->reload()->execute();
@@ -99,7 +112,7 @@ class page_deleted extends Page {
     }
 
     function page_users(){
-        $m=$this->add('Model_User_Deleted');
+        $m=$this->add('Model_User')->deleted();
 
         $cr=$this->add('CRUD',array(
                 'grid_class'=>'Grid',
@@ -117,7 +130,7 @@ class page_deleted extends Page {
 
             $cr->grid->addColumn('button','restore');
             if ($_GET['restore']) {
-                $m=$this->add('Model_User_Base');
+                $m=$this->add('Model_User');
                 $o=$m->load($_GET['restore']);
                 $o->set('is_deleted',false);
                 $o->save();
@@ -127,7 +140,7 @@ class page_deleted extends Page {
     }
 
     function page_clients(){
-        $m=$this->add('Model_Client_Deleted');
+        $m=$this->add('Model_Client')->deleted();
 
         $cr=$this->add('CRUD',array(
                 'grid_class'=>'Grid',
@@ -144,12 +157,15 @@ class page_deleted extends Page {
 
             $cr->grid->addColumn('button','restore');
             if ($_GET['restore']) {
-                $m=$this->add('Model_Client_Base');
+                $m=$this->add('Model_Client')->deleted();
                 $o=$m->load($_GET['restore']);
                 $o->set('is_deleted',false);
                 $o->save();
                 $cr->grid->js('reload')->reload()->execute();
             }
         }
+    }
+    function defaultTemplate() {
+        return array('page/page');
     }
 }

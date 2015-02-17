@@ -1,0 +1,54 @@
+<div class="atk-box atk-push ">
+    <!--<div class="atk-push-small">
+        <button class="atk-button atk-effect-success" ng-click="Task.showForm()">Add Task</button>
+    </div>-->
+    <div class="atk-table">
+        <table class="task_crud">
+            <thead>
+            <tr class="atk-swatch-gray">
+                <th class="task_number_header">#</th>
+                <th class="task_name_header">Name</th>
+                <th class="task_project_header">Project</th>
+                <th class="task_quote_header">Quote</th>
+                <th class="task_requirement_header">Requirement</th>
+                <th class="task_priority_header">Priority</th>
+                <th class="task_type_header">Type</th>
+                <th class="task_status_header">Status</th>
+                <th class="task_spent_time_header" style="{{Task.can_see_spent_time}}">Spent Time</th>
+                <th class="task_requester_header">Requester</th>
+                <th class="task_assigned_header">Assigned</th>
+                <th class="task_actions_header" style="{{Task.show_actions}}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="task in tasks track by $index" class="task_row_{{$index+1}}">
+                <td class="task_number_{{$index+1}}">{{$index+1}}</td>
+                <td class="task_name_{{$index+1}}">{{task.name}}</td>
+                <td class="task_project_{{$index+1}}">{{task.project}}</td>
+                <td class="task_quote_{{$index+1}}">{{task.quote_name}}</td>
+                <td class="task_requirement_{{$index+1}}">{{task.requirement}}</td>
+                <td class="task_priority_{{$index+1}}">{{task.priority}}</td>
+                <td class="task_type_{{$index+1}}">{{task.type}}</td>
+                <td class="task_status_{{$index+1}}">{{task.status}}</td>
+                <td class="task_spent_time_{{$index+1}}" style="{{Task.can_see_spent_time}}">{{task.spent_time}}</td>
+                <td class="task_requester_{{$index+1}}">{{task.requester}}</td>
+                <td class="task_assigned_{{$index+1}}">{{task.assigned}}</td>
+                <td class=" task_actions_{{$index+1}}" style="{{Task.show_actions}}">
+                    <!--<button class="atk-button task_action_edit_{{$index+1}}" style="{{Task.can_edit_task}}" ng-click="Task.edit($index)">Edit</button>-->
+                    <!--<button class="atk-button atk-effect-danger task_action_delete_{{$index+1}}" style="{{Task.can_delete_task}}" ng-confirm-click="Are you sure?" confirmed-click="Task.remove($index)">Delete</button>-->
+
+                    <a href="javascript:void(0)" class="atk-text-nowrap icon-pencil atk-effect-info" ng-click="Task.edit($index)" style="{{Task.can_edit_task}}"> Info</a>
+                    <a href="javascript:void(0)" class="atk-text-nowrap icon-trash atk-effect-danger" style="{{Task.can_delete_task}}" ng-confirm-click="Are you sure?" confirmed-click="Task.remove($index)"> Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="atk-box-small atk-actions atk-align-center paginator" id="tasks_paginator">
+            <a ng-click="Task.paginate(1);" href="javascript:void(null);" class="itemlits first">&laquo;</a>
+            <a ng-click="Task.paginate(prev_page);" href="javascript:void(null);" class="itemlits">&lt;</a>
+            <a ng-repeat="paginator in paginators" ng-click="Task.paginate(paginator.name);" href="javascript:void(null);" class="itemlits {{paginator.class}}">{{paginator.name}}</a>
+            <a ng-click="Task.paginate(next_page);" href="javascript:void(null);" class="itemlits">&gt;</a>
+            <a ng-click="Task.paginate(last_page);" href="javascript:void(null);" class="itemlits last">&raquo;</a>
+        </div>
+    </div>
+</div>

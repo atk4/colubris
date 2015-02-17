@@ -5,6 +5,7 @@ doc/dbupdates/*.fail
 *.bak
 .DS_Store
 config.php
+deploy-config.php
 composer.phar
 composer.lock
 /vendor/*
@@ -14,3 +15,7 @@ upload
 nbproject
 /.idea/workspace.xml
 /.idea
+logs
+unit_tests_config.php
+phinx
+phinx.yml

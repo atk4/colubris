@@ -3,21 +3,22 @@ class page_quotes extends Page {
     public $active_tab=0;
     function init() {
         parent::init();
-
         // Checking client's read permission to this quote and redirect to denied if required
-        if( !$this->api->currentUser()->canSeeQuotesList() ){
+        if( !$this->app->model_user_rights->canSeeQuotes() ){
             throw $this->exception('You cannot see this page','Exception_Denied');
         }
+        $this->title = 'Quotes';
     }
 
     function page_index() {
         $this->addBreadCrumb($this);
 
-        $this->add('View_SwitcherQuotes');
+        //$this->add('View_SwitcherQuotes');
 
         $this->add('H1')->set('Quotes');
 
         $this->addRequestForQuotationButton($this);
+        $this->addArchiveButton($this);
 
         $tabs = $this->add('Tabs');
 
@@ -25,10 +26,9 @@ class page_quotes extends Page {
         $tabs->addTabUrl('./estimate_needed','Estimate Needed ('.$this->getModelEstimateNeeded()->count().')');
         $tabs->addTabUrl('./not_estimated','Not Estimated ('.$this->getModelNotEstimated()->count().')');
         $tabs->addTabUrl('./estimated','Estimated ('.$this->getModelEstimated()->count().')');
-        if(!$this->api->currentUser()->isSales()){
+        if(!$this->app->model_user_rights->canSubmitForQuotation()){
             $tabs->addTabUrl('./estimation_approved','Estimation Approved ('.$this->getModelEstimationApproved()->count().')');
             $tabs->addTabUrl('./finished','Finished ('.$this->getModelFinished()->count().')');
-            $tabs->addTabUrl('./archived','Archived ('.$this->getModelArchived()->count().')');
         }
 
         if ($_GET['active_tab']>0){
@@ -37,16 +37,19 @@ class page_quotes extends Page {
 
     }
     function getBaseModel(){
-        if ($this->api->currentUser()->isDeveloper()) {
-            $quote = $this->add('Model_Quote_Participant');
-        }else{
-            $quote = $this->add('Model_Quote');
+        $quote = $this->add('Model_Quote')->notDeleted()->getThisOrganisation();
+
+        //TODO Kostya. This is commented in purpose to apply newly defined logic. Get rid of clients. Use participants
+        //TODO BUT this should be refactored or removed at all when the AngJS is applied to quotes
+        $r = $this->add('Model_User_Right');
+        if(!$r->canManageAllRecords($this->app->currentUser()->get('id'))){
+            $quote->participated();
         }
-        if($this->api->recall('q_project_id')>0){
+        /*if($this->api->recall('q_project_id')>0){
             $quote->addCondition('project_id',$this->api->recall('q_project_id'));
         }
         if($this->api->recall('q_client_id')>0){
-            $pm=$this->add('Model_Project');
+            $pm=$this->add('Model_Project')->notDeleted();
             $pm->addCondition('client_id',$this->api->recall('q_client_id'));
             $ids="";
             foreach ($pm as $p){
@@ -54,14 +57,14 @@ class page_quotes extends Page {
                 else $ids=$ids.','.$p['id'];
             }
             $quote->addCondition('project_id','in',$ids);
-        }
-        $pr = $quote->join('project','project_id','left','_pr');
+        }*/
+        $pr = $quote->leftJoin('project','project_id','left','_pr');
         $pr->addField('pr_name','name');
-        if ($this->api->currentUser()->isClient()) {
+        /*if ($this->api->currentUser()->isClient()) {
             // show only client's quotes
             $pr->addField('pr_client_id','client_id');
-            $quote->addCondition('pr_client_id',$this->api->auth->model['client_id']);
-        }
+            $quote->addCondition('pr_client_id',$this->app->currentUser()->get('client_id'));
+        }*/
         $pr->addField('project_name','name');
         $quote->setOrder(array('project_name','status'));//->debug();
 
@@ -133,16 +136,6 @@ class page_quotes extends Page {
         $quote=$this->getModelFinished();
         $this->addQuotesCRUD($this,$quote,'active');
     }
-    function getModelArchived(){
-        $quote=$this->getBaseModel();
-        $quote->addCondition('is_archived',true);
-        return $quote;
-    }
-    function page_archived() {
-        $this->active_tab=7;
-        $quote=$this->getModelArchived();
-        $this->addQuotesCRUD($this,$quote,'archive');
-    }
 
     function addBreadCrumb($view) {
         $view->add('x_bread_crumb/View_BC',array(
@@ -159,36 +152,41 @@ class page_quotes extends Page {
     }
 
     function addRequestForQuotationButton($view) {
-        if ($this->api->currentUser()->canSendRequestForQuotation()) {
+        if ($this->app->model_user_rights->canAddQuote()) {
             $b = $view->add('Button')->set('Request For Quotation');
             $b->addStyle('margin-bottom','10px');
             $b->js('click', array(
-                $this->js()->univ()->redirect($this->api->url('quotes/rfq'))
+                $b->js()->univ()->redirect($this->app->url('quotes/rfq'))
             ));
         }
     }
+	function addArchiveButton($view){
+		if(!$this->api->model_user_rights->canSubmitForQuotation()){
+			$b = $view->add('Button')->set('See Archive');
+			$b->js('click', array(
+				$b->js()->univ()->redirect($this->app->url('quotes/archive'))
+			));
+		}
+	}
 
     function addQuotesCRUD($view,$quote,$mode) {
-        $user = $this->api->currentUser();
         $cr = $view->add('CRUD', array(
             'form_class'      => 'Form_EditQuote',
             'grid_class'      => 'Grid_Quotes',
             'allow_add'       => false,
-            'allow_edit'      => $quote->canUserEditQuote($user),
-            'allow_del'       => $quote->canUserDeleteQuote($user),
-            'allowed_actions' => $quote->userAllowedActions($user,$mode),
-        ));
+            'allow_edit'      => $this->app->model_user_rights->canEditQuote(),
+            'allow_del'       => $this->app->model_user_rights->canDeleteQuote(),
+            'allowed_actions' => array('requirements','estimation','send_to_client','approve'),
+        ))->addClass('atk-box');
 
         $cr->setModel(
-            $quote,
-            $quote->whatQuoteFieldsUserCanEdit($user),
-            $quote->whatQuoteFieldsUserCanSee($user)
+            $quote
         );
 
         if($cr->grid){
-            if ($quote->userAllowedArchive($user)){
+            if ($this->app->model_user_rights->canMoveToFromArchive()){
                 if($_GET['in_archive']){
-                    $mq=$this->add('Model_Quote')->load($_GET['in_archive']);
+                    $mq=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['in_archive']);
                     $mq->in_archive();
                     $mq->save();
 
@@ -196,7 +194,7 @@ class page_quotes extends Page {
                     //$cr->grid->js()->reload()->execute();
                 }
                 if($_GET['activate']){
-                    $mq=$this->add('Model_Quote')->load($_GET['activate']);
+                    $mq=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['activate']);
                     $mq->activate();
                     $mq->save();
 
@@ -205,20 +203,20 @@ class page_quotes extends Page {
                 }
             }
 
-            $cr->grid->addClass('zebra bordered');
-            $cr->grid->add('View_ExtendedPaginator',
-                array(
-                    'values'=>array('10','50','100'),
-                    'grid'=>$cr->grid,
-                ),
-                'extended_paginator');
+//            $cr->grid->addClass('zebra bordered');
+//            $cr->grid->add('View_ExtendedPaginator',
+//                array(
+//                    'values'=>array('10','50','100'),
+//                    'grid'=>$cr->grid,
+//                ),
+//                'extended_paginator');
             $cr->grid->addQuickSearch(array('quote.name','project'));
         }
 
     }
     function defaultTemplate() {
-        $tab=$this->api->recall('active_tab');
-        $this->api->forget('active_tab');
+        $tab=$this->app->recall('active_tab');
+//        $this->app->forget('active_tab');
         return array('page/quotes/base'.$tab);
     }
 }

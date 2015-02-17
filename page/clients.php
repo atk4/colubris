@@ -1,16 +1,15 @@
 <?php
+/**
+ * Created by Vadym Radvansky
+ * Date: 7/8/14 12:10 PM
+ */
 class page_clients extends Page {
-
+    use Helper_Url;
     function init() {
         parent::init();
+        $this->addNgJs();
 
-        // Checking client's read permission to this quote and redirect to denied if required
-        if( !$this->api->currentUser()->canUserMenageClients() ){
-            throw $this->exception('You cannot see this page','Exception_Denied');
-        }
-    }
-
-	function page_index(){
+        $this->title = 'Clients';
 
         $this->add('x_bread_crumb/View_BC',array(
             'routes' => array(
@@ -22,34 +21,29 @@ class page_clients extends Page {
                     'url' => 'clients',
                 ),
             )
-        ));
-
-        $this->add('H2')->set('Clients');
-
-        $crud=$this->add('CRUD');
-        $crud->setModel('Client',
-            array('name','email','phone','is_archive')
-        );
-
-        if($crud->grid){
-            $crud->grid->addClass('zebra bordered');
-            $crud->grid->addFormatter('name','fullwidth');
-            $crud->grid->addColumn('expander','users','Users');
-            //$crud->grid->addButton('Import from SortMyBooks')->js('click')
-            //    ->univ()->frameURL('Import from SortMyBooks...',$this->api->getDestinationURL('./smboimport'));
-        }
+        ),'bread_crumb');
     }
-    function page_users(){
-        $this->api->stickyGET('client_id');
-        $m=$this->add('Model_User_Organisation')
-            ->setMasterField('client_id',$_GET['client_id'])
-            ;
+    protected function addNgJs() {
+        $this->app->jquery->addStaticInclude('ng/vendor/angularjs');
+        $this->app->jquery->addStaticInclude('ng/clients/app');
+        $this->app->jquery->addStaticInclude('ng/clients/controllers/inlineCrud');
+        $this->app->jquery->addStaticInclude('ng/_shared/directives/ngConfirmClick');
+        $this->app->jquery->addStaticInclude('ng/clients/directives/inlineCrud');
+        $this->app->jquery->addStaticInclude('ng/clients/directives/clientForm');
+        $this->app->jquery->addStaticInclude('ng/_shared/services/API');
+        $this->app->jquery->addStaticInclude('ng/_shared/services/Client');
+        $this->app->jquery->addStaticInclude('ng/_shared/services/Project');
+        $this->app->jquery->addStaticInclude('ng/_shared/services/Quote');
 
-        $cr=$this->add('CRUD');
-        $cr->setModel($m,
-            array('email','name','password'),
-            array('email','name')
+        $this->js(true)->colubris()->startClientsApp(
+            $this->app->url('/'),
+            $this->app->getConfig('url_prefix'),
+            $this->app->getConfig('url_postfix'),
+            $this->app->url($this->app->getConfig('js_api_base_url')),
+            $this->app->currentUser()->get('lhash')
         );
-
+    }
+    function defaultTemplate() {
+        return array('page/clients');
     }
 }

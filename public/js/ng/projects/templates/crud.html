@@ -1,0 +1,44 @@
+<div class="atk-box atk-push project_crud_wrapper">
+    <div class="atk-push-small">
+        <button class="atk-button atk-effect-success add_project_button" style="{{Project.can_add_projects}}" ng-click="Project.showForm()">Add Project</button>
+    </div>
+    <div class="atk-table">
+        <table class="project_crud">
+            <thead>
+            <tr class="atk-swatch-gray">
+                <th class="project_number_header">#</th>
+                <th class="project_name_header">Info</th>
+                <th class="project_actions_header" style="{{Project.show_actions}}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="project in projects track by $index" class="project_crud_row_{{$index+1}}">
+                <td class="project_crud_index">{{$index+1}}</td>
+                <td class="project_crud_name">
+                    <div class="atk-action">
+                        <span class="atk-label atk-effect-info">Req.#{{project.id}}</span>
+                        <span class="atk-label atk-effect-warning"><strong>{{project.name || 'no name provided'}}</strong></span>
+                    </div>
+                    <!--<div class="atk-action">
+                        <span><strong class="icon-star"> Client: </strong>{{project.client || '---'}}</span>
+                    </div>-->
+                    <div class="atk-action">
+                        <span class="atk-box atk-swatch-gray">{{project.descr}}</span>
+                    </div>
+                </td>
+                <td class="project_crud_actions" style="{{Project.show_actions}}">
+                    <a href="javascript:void(0)" class="atk-text-nowrap icon-pencil atk-effect-info" ng-click="Project.edit($index)" style="{{Project.can_edit_projects}}"> Info</a>
+                    <a href="javascript:void(0)" class="atk-text-nowrap icon-trash atk-effect-danger" style="{{Project.can_delete_projects}}" ng-confirm-click="Are you sure?" confirmed-click="Project.remove($index)"> Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="atk-box-small atk-actions atk-align-center paginator" id="projects_paginator">
+            <a ng-click="Project.paginate(1);" href="javascript:void(null);" class="itemlits first">&laquo;</a>
+            <a ng-click="Project.paginate(prev_page);" href="javascript:void(null);" class="itemlits">&lt;</a>
+            <a ng-repeat="paginator in paginators" ng-click="Project.paginate(paginator.name);" href="javascript:void(null);" class="itemlits {{paginator.class}}">{{paginator.name}}</a>
+            <a ng-click="Project.paginate(next_page);" href="javascript:void(null);" class="itemlits">&gt;</a>
+            <a ng-click="Project.paginate(last_page);" href="javascript:void(null);" class="itemlits last">&raquo;</a>
+        </div>
+    </div>
+</div>

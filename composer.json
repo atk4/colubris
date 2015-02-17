@@ -1,10 +1,34 @@
 {
-		"name": "atk4/atk4-secure",
-		"description": "Initial bootstrap of Agile Toolkit",
-		"license": "GPL-3.0",
-		
-		"require": {
-            "atk4/atk4": "dev-master",
-            "suin/php-rss-writer": "dev-master"
-		}
+    "autoload": {
+        "psr-0": {"": "lib/"}
+    },
+
+    "repositories": [
+    ],
+    "require": {
+      "atk4/atk4": "4.3.*@dev",
+      "robmorgan/phinx": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.3.*",
+        "phpunit/php-invoker": "~1.1",
+        "phpunit/dbunit": ">=1.2",
+        "phpunit/phpunit-selenium": ">=1.2",
+        "phpunit/phpunit-story": "dev-master",
+        "facebook/webdriver": "dev-master"
+    },
+    "scripts": {
+        "pre-install-cmd": [
+        ],
+        "post-install-cmd": [
+            "ln -sf vendor/phpunit/phpunit/phpunit"
+        ],
+        "pre-update-cmd": [
+        ],
+        "post-update-cmd": [
+            "ln -sf vendor/phpunit/phpunit/phpunit"
+        ],
+        "post-create-project-cmd": [
+        ]
+    }
 }

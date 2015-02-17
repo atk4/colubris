@@ -1,0 +1,129 @@
+<h4>Tasks:</h4>
+<div class="atk-box-small relative" ng-repeat="task in tasks track by $index">
+    <div id="delete-task-button-{{task.id}}" class="icon-trash delete-task" ng-confirm-click="Are you sure?" confirmed-click="Task.delete(task.id)" style="{{task.can_delete_task}}"></div>
+    <div class="atk-push small atk-cells">
+
+        <!--row number and ID-->
+        <div class="atk-cell atk-valign-top">
+            <div class="atk-label atk-effect-info">{{$index+1}} (#{{task.id}})</div>
+        </div>
+
+        <!--Name-->
+        <div class="atk-cell atk-jackscrew">
+            <div class="atk-label atk-effect-warning inline-edit" style="white-space: pre-wrap"><strong editable-text="task.name" onaftersave="Task.save(task,false)">{{task.name || '---'}}</strong></div>
+        </div>
+    </div>
+
+    <!--Requester-->
+    <div>
+        <strong class="icon-user"> Requester: </strong>
+        <span class="inline-edit" onaftersave="Task.save(task,false)" editable-select="task.requester_id" e-ng-options="s.value as s.text for s in participants">{{ showTaskRequester(task) || '---' }}</span>
+    </div>
+
+    <!--Assigned-->
+    <div>
+        <strong class="icon-user"> Assigned: </strong>
+        <span class="inline-edit" onaftersave="Task.save(task,false)" editable-select="task.assigned_id" e-ng-options="s.value as s.text for s in participants">{{ showTaskAssigned(task) || '---' }}</span>
+    </div>
+
+    <!--Status-->
+    <div class="">
+        <strong class="icon-chat-empty"> Status: </strong>
+        <span class="inline-edit" onaftersave="Task.save(task,false)" editable-select="task.status" e-ng-options="s.value as s.text for s in statuses">{{ showTaskStatus(task) || '---' }}</span>
+    </div>
+
+    <!--Type-->
+    <div>
+        <strong class="icon-list"> Type: </strong>
+        <span class="inline-edit" onaftersave="Task.save(task,false)" editable-select="task.type" e-ng-options="s.value as s.text for s in types">{{ showTaskType(task) || '---' }}</span>
+    </div>
+
+    <!--Estimate-->
+    <div>
+        <strong class="icon-clock"> Estimate: </strong>
+        <span class="inline-edit" editable-text="task.estimate" onaftersave="Task.save(task,false)">{{task.estimate || '---'}}</span>
+    </div>
+
+    <!--Description-->
+    <div class="inline-edit"><span class="atk-box atk-swatch-gray" editable-textarea="task.descr_original" onaftersave="Task.save(task,false)">{{task.descr_original || 'no description'}}</span></div>
+
+    <!--Created-->
+    <div><strong class="icon-plus-circled-1"> Created: </strong> {{task.created_dts}}</div>
+
+    <!--Last update-->
+    <div><strong class="icon-cw"> Last updated: </strong> {{task.updated_dts}}</div>
+</div>
+
+<div style="{{Task.can_add_task}}{{show_add_task_from}}">
+    <h4>Add NewTask</h4>
+    <div class="atk-box-small"  id="task_view">
+        <form class="atk-form">
+            <input type="hidden" ng-model="reqv.id" />
+
+            <div class="atk-push-small">
+                <div class="atk-push-small">
+                    <label for="task_name"><strong>Name:</strong></label>
+                </div>
+                <input type="text" id="task_name" class="atk-jackscrew" ng-model="task.name" />
+            </div>
+
+            <div class="atk-push-small">
+                <div class="atk-push-small">
+                    <label for="task_description"><strong>Description:</strong></label>
+                </div>
+                <textarea id="task_description" type="text" class="atk-jackscrew" ng-model="task.descr_original"></textarea>
+            </div>
+
+            <div class="atk-push-small">
+                <div class="atk-row">
+                    <!--estimate-->
+                    <div class="atk-push-small atk-col-6">
+                        <label for="task_estimate"><strong>Estimate:</strong></label>
+                        <input type="text" id="task_estimate" ng-model="task.estimate" />
+                    </div>
+                    <!--priority-->
+                    <div class="atk-push-small atk-col-6">
+                        <label for="task_priority"><strong>Priority:</strong></label>
+                        <select id="task_priority" ng-model="task.priority" ng-options="priority.text for priority in priorities track by priority.name"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="atk-push-small">
+
+                <div class="atk-row">
+                    <!--Type-->
+                    <div class="atk-push-small atk-col-6">
+                        <label for="task_type"><strong>Type:</strong></label>
+                        <select id="task_type" ng-model="task.type"  ng-options="type.text for type in types track by type.value"></select>
+                    </div>
+                    <!--Status-->
+                    <div class="atk-push-small atk-col-6">
+                        <label for="task_status"><strong>Status:</strong></label>
+                        <select id="task_status" ng-model="task.status"  ng-options="status.text for status in statuses track by status.value"></select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="atk-push-small">
+                <div class="atk-push-small">
+                    <label for="task_requester"><strong>Requester:</strong></label>
+                </div>
+                <select id="task_requester" ng-model="task.requester"  ng-options="requester.name  for requester in requesters track by requester.id" ng-init="requester = task.requester_id"  ></select>
+            </div>
+
+            <div class="atk-push-small">
+                <div class="atk-push-small">
+                    <label for="task_assigned"><strong>Assigned:</strong></label>
+                </div>
+                <select id="task_assigned" ng-model="task.assigned"  ng-options="assigned.name  for assigned in assigneds track by assigned.id" ng-init="assigned = task.assigned_id"  ></select>
+            </div>
+
+            <div class="atk-actions">
+                <button ng-click="save(task,reqv)" class="atk-swatch-green atk-button-small atk-button" >Add</button>
+            </div>
+
+        </form>
+    </div>
+</div>

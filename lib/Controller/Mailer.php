@@ -18,7 +18,8 @@ class Controller_Mailer extends AbstractController {
      */
     function addReceiverByUserId($id,$mode,$exclude_myself=true){
         if ($id>0){
-            $u=$this->add('Model_User')->load($id);
+            $u=$this->add('Model_User')->getActive();
+			$u->load($id);
             // Check if the user wants to get email
             if( ($mode===true) || ($u[$mode]) ) {
                 // Check if user is client and status of task not restricted to view by clients
@@ -28,7 +29,7 @@ class Controller_Mailer extends AbstractController {
                     )
                 ){
                     if(!in_array($u['email'],$this->receivers)){
-                        if ( (!$exclude_myself) || ($u['id']!=$this->api->auth->model['id']) ){
+                        if ( (!$exclude_myself) || ($u['id']!=$this->app->currentUser()->get('id')) ){
                             if($this->isEmail($u['email'])) $this->receivers[]=$u['email'];
                         }
                     }
@@ -40,8 +41,8 @@ class Controller_Mailer extends AbstractController {
     /*
      */
     function addAllManagersReceivers($organisation_id){
-        $u=$this->add('Model_User_Base');
-        $u->addCondition('organisation_id',$organisation_id);
+        $u=$this->add('Model_User');
+        //$u->addCondition('organisation_id',$organisation_id);
         $u->addCondition('is_manager',true);
         foreach ($u->getRows() as $user){
             if(!in_array($user['email'],$this->receivers)){
@@ -53,7 +54,7 @@ class Controller_Mailer extends AbstractController {
     /*
      */
     function addClientReceiver($project_id){
-        $p=$this->add('Model_Project');
+        $p=$this->add('Model_Project')->notDeleted();
         $p->addCondition('id',$project_id);
 
         $c=$p->join('client.id','client_id','left','_c');

@@ -19,10 +19,10 @@ class Page_Requirements extends Page {
         if (!isset($_GET['quote_id'])) throw $this->exception('Provide $_GET[\'quote_id\']');
     	$this->api->stickyGet('quote_id');
     	$this->api->stickyGet('project_id');
-        $quote = $this->add('Model_Quote')->load($_GET['quote_id']); // TODO nice UI to show user if there is no quote
+        $quote = $this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['quote_id']); // TODO nice UI to show user if there is no quote
 
         // Does Project of this quotetion exist?
-        $project=$this->add('Model_Project')->tryLoad($quote->get('project_id'));
+        $project=$this->add('Model_Project')->notDeleted()->tryLoad($quote->get('project_id'));
         if( !$project->loaded() ){
             throw $this->exception('There is no such a project','Exception_Denied');
         	// TODO nice UI to explain user that there is no such a project
@@ -32,7 +32,7 @@ class Page_Requirements extends Page {
         // Storing project id for assigned and requester
         $this->api->memorize('project_id',$project->get('id'));
 
-        $requirements=$this->add('Model_Requirement');
+        $requirements=$this->add('Model_Requirement')->notDeleted();
         $requirements->addCondition('quote_id',$_GET['quote_id']);
 
         // Checking client's read permission to this quote and redirect to denied if required
@@ -70,7 +70,7 @@ class Page_Requirements extends Page {
         // client info grid
         $left->add('H4')->set('Client:');
         $fields_required = array('name','email','phone');
-        $project=$this->add('Model_Project')->load($quote->get('project_id'));
+        $project=$this->add('Model_Project')->notDeleted()->load($quote->get('project_id'));
         $this->addClientInfoGrid($left,$fields_required,$project->get('client_id'));
 
         // | *** RIGHT *** |
@@ -152,10 +152,6 @@ class Page_Requirements extends Page {
         $req_view->showGrids();
     }
 
-
-
-
-
     function addBreacrumb($view){
         $view->add('x_bread_crumb/View_BC',array(
             'routes' => array(
@@ -201,15 +197,15 @@ class Page_Requirements extends Page {
                 $this->api->mailer->addClientReceiver($quote->get('project_id'));
                 $this->api->mailer->sendMail('quote_approved',array(
                     'quotename'=>$quote->get('name'),
-                    'link'=>$this->api->siteURL().$this->api->url('quotes/rfq/requirements',array('quote_id'=>$quote->get('id'))),
+                    'link'=>$this->api->siteURL().$this->api->url('quotes/'.$quote->get('id')),
                 ));
 
                 // Clearing email receivers and Sending email to managers
                 $this->api->mailer->receivers=array();
-                $this->api->mailer->addAllManagersReceivers($this->api->auth->model['organisation_id']);
+                $this->api->mailer->addAllManagersReceivers($this->app->currentUser()->get('organisation_id'));
                 $this->api->mailer->sendMail('quote_approved',array(
                     'quotename'=>$quote->get('name'),
-                    'link'=>$this->api->siteURL().$this->api->url('quotes/rfq/requirements',array('quote_id'=>$quote->get('id'))),
+                    'link'=>$this->api->siteURL().$this->api->url('quotes/'.$quote->get('id')),
                 ));
 
                 $this->api->redirect($this->api->url('/quotes'));
@@ -269,12 +265,12 @@ class Page_Requirements extends Page {
         //$v=$this->add('View')->setClass('right');
         $page=explode('_',$this->api->page);
         if($page[count($page)-1]!='requirements'){
-        	if( !($this->api->auth->model['is_developer']) &&
+        	if( !($this->app->currentUser()->get('is_developer')) &&
                 ($quote->get('status')=='quotation_requested'
-        			|| ( $this->api->auth->model['is_client'] && $quote->get('status')=='not_estimated' ))
+        			|| ( $this->app->currentUser()->get('is_client') && $quote->get('status')=='not_estimated' ))
             ){
 		        $b=$v->add('Button')->set('Edit requirements');
-		        $b->js('click')->univ()->redirect($this->api->url('/'.$page[0].'/quotes/rfq/requirements',array('quote_id'=>$quote->get('id'))));
+		        $b->js('click')->univ()->redirect($this->api->url('/'.$page[0].'/quotes/'.$quote->get('id')));
             }
         }
 
@@ -308,15 +304,14 @@ class Page_Requirements extends Page {
         $gr = $v->add('Grid_Quote');
         $gr->addColumn('text','name','');
         $gr->addColumn('text','value','Info');
-        $gr->addFormatter('value','wrap');
+//        $gr->addFormatter('value','wrap');
         $gr->setSource($source);
 
     }
 
     function addClientInfoGrid($v,$fields_required,$client_id) {
 
-        try {
-        $client = $this->add('Model_Client')->tryLoad($client_id);
+        $client = $this->add('Model_Client')->notDeleted()->tryLoad($client_id);
 
         if ($client->loaded()) {
             $count = 0;
@@ -334,9 +329,6 @@ class Page_Requirements extends Page {
 //        $gr->addFormatter('value','wrap');
             $gr->setSource($source);
         }
-        } catch (BaseException $e) {
-        
-        }
 
     }
 
@@ -347,7 +339,7 @@ class Page_Requirements extends Page {
 
         $total_view = $v->add('View')->setClass('estimate_total_time_to_reload');
 
-        if (count($fields = $this->api->currentUser()->getFloatingTotalFields())) {
+        if (count($fields = $this->app->user_access->getFloatingTotalFields())) {
             $total_view->add('View')->set('Estimated: ');
             foreach ($fields as $field) {
                 switch ($field) {
@@ -414,7 +406,7 @@ class Page_Requirements extends Page {
         if ($quote->canUserEditRequirements($this->api->currentUser())) {
             $b=$view->add('Button')->set('Edit requirements');
             $b->js('click')->univ()->redirect(
-                $this->api->url('quotes/rfq/requirements',array('quote_id'=>$this->quote->get('id')))
+                $this->api->url('quotes/'.$this->quote->get('id'))
             );
         }
     }
@@ -429,7 +421,7 @@ class Page_Requirements extends Page {
             $can_edit=false;
             $can_del=false;
         }
-        $cr = $view->add('CRUD',
+        $cr = $view->add('CRUD_Requirement',
             array(
                 'allow_add'    => false, // we cannot add from crud TODO make add from CRUD only
                 'allow_edit'   => $can_edit,
@@ -454,16 +446,10 @@ class Page_Requirements extends Page {
                 $quote->whatRequirementFieldsUserCanEdit($this->api->currentUser()),
                 $quote->whatRequirementFieldsUserCanSee($this->api->currentUser())
         );
+	    $cr->configure();
 
         $cr->js('reload',$total_view->js()->trigger('reload'));
 
-        if($cr->grid){
-            $cr->grid->addClass('zebra bordered');
-         	$cr->grid->addColumn('expander','more');
-         	$cr->grid->addFormatter('file','download');
-         	//$cr->grid->addFormatter('estimate','estimate');
-         	$cr->grid->setFormatter('name','wrap');
-        }
         return $cr;
     }
 
@@ -474,12 +460,12 @@ class Page_Requirements extends Page {
             $view->add('H4')->set('New Requirement:');
 
             $form=$view->add('Form');
-            $m=$this->setModel('Model_Requirement');
+            $m=$this->setModel('Model_Requirement')->notDeleted();
             $form->setModel($m,array('name','descr','file_id'));
             $form->addSubmit('Save');
 
             if($form->isSubmitted()){
-            	$form->model->set('user_id',$this->api->auth->model['id']);
+            	$form->model->set('user_id',$this->app->currentUser()->get('id'));
             	$form->model->set('quote_id',$quote['id']);
             	$form->update();
 

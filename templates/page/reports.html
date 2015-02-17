@@ -1,7 +1,8 @@
-<div id="<?$_name?>" class="page_<?$_page?>">
+<div id="{$_name}" class="page_{$_page}">
+    {$bread_crumb}
     <script>
         $(function() {
-            $( "#colubris_reports_view_reportsswitcher_view_form_date_from" ).datepicker({
+            $( "#colubris_layout_fluid_reports_form_filter_withdate_date_from" ).datepicker({
                 showOtherMonths: true,
                 selectOtherMonths: true,
                 dateFormat:'dd/mm/yy',
@@ -10,7 +11,7 @@
                 changeMonth:true,
                 changeYear:true
             });
-            $( "#colubris_reports_view_reportsswitcher_view_form_date_to" ).datepicker({
+            $( "#colubris_layout_fluid_reports_form_filter_withdate_date_to" ).datepicker({
                 showOtherMonths: true,
                 selectOtherMonths: true,
                 dateFormat:'dd/mm/yy',
@@ -21,5 +22,5 @@
             });
         });
     </script>
-    <?$Content?>
+    {$Content}
 </div>

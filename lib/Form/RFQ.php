@@ -9,7 +9,8 @@
 class Form_RFQ extends Form {
     function init() {
         parent::init();
-        $this->setModel('Model_Quote',array('project_id','name','general_description'));
+		$m = $this->add('Model_Quote')->notDeleted()->getThisOrganisation();
+        $this->setModel($m,array('project_id','name','general_description'));
 
         $this->getElement('project')->set($_GET['project']);
         $this->getElement('project_id')->set($_GET['project_id']);
@@ -30,10 +31,11 @@ class Form_RFQ extends Form {
     }
     function checkSubmited() {
         $js=array();
-        $this->model->set('user_id',$this->api->auth->model['id']);
+        $this->model->set('user_id',$this->app->currentUser()->get('id'));
         $this->model->set('status','quotation_requested');
         $this->model->set('currency','GBP');
         $this->update();
-        $this->api->redirect($this->api->url('/quotes/rfq/requirements',array('quote_id'=>$this->model->get('id'))));
+        //$this->api->redirect($this->api->url('/quotes/rfq/requirements',array('quote_id'=>$this->model->get('id'))));
+        $this->api->redirect($this->api->url('/quotes/'.$this->model->get('id')));
     }
 }

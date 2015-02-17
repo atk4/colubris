@@ -16,12 +16,11 @@ class Manager_Projects extends View {
         $grid->addColumn('button','edit');
         $grid->addColumn('button','estimation','Submit for Quotation');
         if($_GET['edit']){
-            $this->js()->univ()->redirect($this->api->url('/quotes/rfq/requirements',
-                        array('quote_id'=>$_GET['edit'])))
+            $this->js()->univ()->redirect($this->api->url('/quotes/'.$_GET['edit']))
                 ->execute();
         }
         if($_GET['estimation']){
-        	$quote=$this->add('Model_Quote')->load($_GET['estimation']);
+        	$quote=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['estimation']);
         	$quote->set('status','estimate_needed');
         	$quote->save();
         	$this->api->redirect($this->api->url('/manager'));
@@ -34,8 +33,7 @@ class Manager_Projects extends View {
         $m->addCondition('status','not_estimated');
         $grid->addColumn('button','edit');
         if($_GET['edit']){
-            $this->js()->univ()->redirect($this->api->url('/quotes/rfq/requirements',
-                        array('quote_id'=>$_GET['edit'])))
+            $this->js()->univ()->redirect($this->api->url('/quotes/'.$_GET['edit']))
                 ->execute();
         }
         
@@ -46,16 +44,15 @@ class Manager_Projects extends View {
         $m->addCondition('status','estimated');
         $grid->addColumn('button','edit');
         if($_GET['edit']){
-            $this->js()->univ()->redirect($this->api->url('/quotes/rfq/requirements',
-                        array('quote_id'=>$_GET['edit'])))
+            $this->js()->univ()->redirect($this->api->url('/quotes/'.$_GET['edit']))
                 ->execute();
         }
         $grid->addColumn('button','send_to_client','Send Quote to the client');
         if($_GET['send_to_client']){
-        	$quote=$this->add('Model_Quote')->load($_GET['send_to_client']);
+        	$quote=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['send_to_client']);
         	
         	if ($quote['client_id']>0){
-        		$client=$this->add('Model_Client')->load($quote['client_id']);
+        		$client=$this->add('Model_Client')->notDeleted()->load($quote['client_id']);
                 $m->api->mailer->setReceivers(array($client['email']));
 
                 if ($client['email']!=''){
@@ -80,8 +77,7 @@ class Manager_Projects extends View {
         $m->addCondition('status','estimate_needed');
         $grid->addColumn('button','edit');
         if($_GET['edit']){
-            $this->js()->univ()->redirect($this->api->url('/quotes/rfq/requirements',
-                        array('quote_id'=>$_GET['edit'])))
+            $this->js()->univ()->redirect($this->api->url('/quotes/'.$_GET['edit']))
                 ->execute();
         }
         

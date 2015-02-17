@@ -80,8 +80,106 @@ $.each({
             ;
         }
 
-	}
-	
+	},
+    reloadForm: function (form_id,field) {
+        var queue = ['project','quote','requirement'];
+        var form = $("#" + form_id).find("form");
+        var action = form.attr("action");
+
+        var remove = false;
+        $.each(queue,function(count,word) {
+            if (!remove) {
+                form.find('select').each(function(c,el) {
+                    if ($(el).attr('data-shortname') == word) {
+                        action = action + '&' + $(el).attr('data-shortname') + '=' + $(el).val();
+                    }
+                });
+                if (word == field) {
+                    remove = true;
+                }
+            } else {
+                $rr = form.find('select[data-shortname="'+ word +'"]').closest('.atk-form-row');
+                $rr.remove();
+                //console.log($rr);
+            }
+
+        });
+        form.attr("action",action);
+        //console.log("============ action ============");
+        //console.log(action);
+        form.submit();
+
+    },
+    startRequirementApp: function(quote_id,base_url,prefix,postfix,api_base_url,lhash,user_id,current_user_rights) {
+        angular.element(document).ready(function() {
+            app_module.quote_id = quote_id;
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            app_module.user_id  = user_id;
+            app_module.current_user_rights  = current_user_rights;
+            angular.bootstrap(document, ['quotes.one.app']);
+        });
+    },
+    startClientsApp: function(base_url,prefix,postfix,api_base_url,lhash) {
+        angular.element(document).ready(function() {
+//            app_module.client_id = client_id;
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            angular.bootstrap(document, ['clients.app']);
+        });
+    },
+    startTasksApp: function(base_url,prefix,postfix,api_base_url,lhash,user_id,current_user_rights) {
+        angular.element(document).ready(function() {
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            app_module.user_id  = user_id;
+            app_module.current_user_rights  = current_user_rights;
+            angular.bootstrap(document, ['tasks.app']);
+        });
+    },
+    startSettingsApp: function(user_id,base_url,prefix,postfix,api_base_url,lhash) {
+        angular.element(document).ready(function() {
+            app_module.user_id  = user_id;
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            angular.bootstrap(document, ['settings.app']);
+        });
+    },
+    startProjectsApp: function(base_url,prefix,postfix,api_base_url,lhash,user_id,current_user_rights) {
+        angular.element(document).ready(function() {
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            app_module.user_id  = user_id;
+            app_module.current_user_rights  = current_user_rights;
+            angular.bootstrap(document, ['projects.app']);
+        });
+    },
+    startUsersApp: function(base_url,prefix,postfix,api_base_url,lhash,current_user_rights) {
+        angular.element(document).ready(function() {
+            app_module.base_url = base_url;
+            app_module.prefix   = prefix;
+            app_module.postfix  = postfix;
+            app_module.api_base_url = api_base_url;
+            app_module.lhash  = lhash;
+            app_module.current_user_rights  = current_user_rights;
+            angular.bootstrap(document, ['users.app']);
+        });
+    }
 },$.colubris._import);
-	
+
 })(jQuery);

@@ -2,15 +2,15 @@
 class Grid_Quotes extends Grid {
     public $allowed_actions = array();
     public $posible_actions = array(
-        'requirements'   => array('status'=>array('Quotation Requested'),'name'=>'Requirements',            'get_var'=>'requirements'),
-        'estimation'     => array('status'=>array('Quotation Requested'),'name'=>'Submit for Quotation',    'get_var'=>'estimation'),
-        'send_to_client' => array('status'=>array('Estimated'),          'name'=>'Send Quote to the client','get_var'=>'send_to_client'),
-        'approve'        => array('status'=>array('Estimated'),          'name'=>'Approve Estimation',      'get_var'=>'approve'),
-        'estimate'       => array('status'=>array('Estimate Needed'),    'name'=>'Estimate',                'get_var'=>'estimate'),
+        'requirements'   => array('status'=>array('quotation_requested'),'name'=>'Requirements',            'get_var'=>'requirements'),
+        'estimation'     => array('status'=>array('quotation_requested'),'name'=>'Submit for Quotation',    'get_var'=>'estimation'),
+        'send_to_client' => array('status'=>array('estimated'),          'name'=>'Send to client',          'get_var'=>'send_to_client'),
+        'approve'        => array('status'=>array('estimated'),          'name'=>'Approve Estimation',      'get_var'=>'approve'),
+        'estimate'       => array('status'=>array('estimate_needed'),    'name'=>'Estimate',                'get_var'=>'estimate'),
         'details'        => array('status'=>array('any'),                'name'=>'Details',                 'get_var'=>'details'),
-        'active'         => array('status'=>array('any'),                'name'=>'Move to Archive',         'get_var'=>'in_archive'),
-        'archive'        => array('status'=>array('any'),                'name'=>'Extract from Archive',    'get_var'=>'activate'),
-        'edit_details'   => array('status'=>array('Not Estimated','Quotation Requested'),
+        'active'         => array('status'=>array('any'),                'name'=>'To Archive',              'get_var'=>'in_archive'),
+        'archive'        => array('status'=>array('any'),                'name'=>'From Archive',            'get_var'=>'activate'),
+        'edit_details'   => array('status'=>array('not_estimated','quotation_requested'),
                                                                          'name'=>'Edit Details',            'get_var'=>'edit_details'),
     );
     function init() {
@@ -34,8 +34,7 @@ class Grid_Quotes extends Grid {
         // estimate
         if( $_GET['estimate'] ) {
             if ( in_array('estimate',$this->allowed_actions) ) {
-                $this->js()->univ()->redirect($this->api->url('quotes/rfq/requirements',
-               			array('quote_id'=>$_GET['estimate'])))->execute();
+                $this->js()->univ()->redirect($this->api->url('quotes/'.$_GET['estimate']))->execute();
             } else {
                 $this->js()->univ()->errorMessage('Action "'.$this->posible_actions['estimate']['name'].'" is not allowed!')->execute();
             }
@@ -54,7 +53,7 @@ class Grid_Quotes extends Grid {
         // estimation
         if( $_GET['estimation'] ){
             if ( in_array('estimation',$this->allowed_actions) ) {
-                $quote=$this->add('Model_Quote')->load($_GET['estimation']);
+                $quote=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['estimation']);
                	$quote->set('status','estimate_needed');
                	$quote->save();
                 $this->js()->reload()->execute();
@@ -66,22 +65,22 @@ class Grid_Quotes extends Grid {
         // approve
         if( $_GET['approve'] ){
             if ( in_array('approve',$this->allowed_actions) ) {
-                $quote=$this->add('Model_Quote')->load($_GET['approve']);
+                $quote=$this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['approve']);
                 $quote->approve();
 
                 // Sending email to client
                 $this->api->mailer->addClientReceiver($quote->get('project_id'));
                 $this->api->mailer->sendMail('quote_approved',array(
                     'quotename'=>$quote->get('name'),
-                    'link'=>$this->api->siteURL().$this->api->url('quotes/rfq/requirements',array('quote_id'=>$quote->get('id'))),
+                    'link'=>$this->api->siteURL().$this->api->url('quotes/'.$quote->get('id')),
                 ));
 
                 // Clearing email receivers and Sending email to managers
                 $this->api->mailer->receivers=array();
-                $this->api->mailer->addAllManagersReceivers($this->api->auth->model['organisation_id']);
+                $this->api->mailer->addAllManagersReceivers($this->app->currentUser()->get('organisation_id'));
                 $this->api->mailer->sendMail('quote_approved',array(
                     'quotename'=>$quote->get('name'),
-                    'link'=>$this->api->siteURL().$this->api->url('quotes/rfq/requirements',array('quote_id'=>$quote->get('id'))),
+                    'link'=>$this->api->siteURL().$this->api->url('quotes/'.$quote->get('id')),
                 ));
 
                 $this->js()->reload()->execute();
@@ -94,7 +93,7 @@ class Grid_Quotes extends Grid {
         if( $_GET['send_to_client'] ){
             if ( in_array('send_to_client',$this->allowed_actions) ) {
                 try {
-                    $client = $this->add('Model_Quote')->load($_GET['send_to_client'])->sendEmailToClient();
+                    $client = $this->add('Model_Quote')->notDeleted()->getThisOrganisation()->load($_GET['send_to_client'])->sendEmailToClient();
                 } catch (Exception_QuoteHasNoClient $e) {
                     $this->js()->univ()->errorMessage('The project of this quote has no client!')->execute();
                 } catch (Exception_ClientHasNoEmail $e) {
@@ -109,8 +108,7 @@ class Grid_Quotes extends Grid {
         // details
         if( $_GET['details'] ){
             if ( in_array('details',$this->allowed_actions) ) {
-                $this->js()->univ()->redirect($this->api->url('quotes/rfq/requirements',
-                        array('quote_id'=>$_GET['details'])))->execute();
+                $this->js()->univ()->redirect($this->api->url('quotes/'.$_GET['details']))->execute();
             } else {
                 $this->js()->univ()->errorMessage('Action "'.$this->posible_actions['details']['name'].'" is not allowed')->execute();
             }
@@ -119,8 +117,7 @@ class Grid_Quotes extends Grid {
         // edit_details
         if( $_GET['edit_details'] ){
             if ( in_array('edit_details',$this->allowed_actions) ) {
-            $this->js()->univ()->redirect($this->api->url('quotes/rfq/requirements',
-                array('quote_id'=>$_GET['edit_details'])))->execute();
+            $this->js()->univ()->redirect($this->api->url('quotes/'.$_GET['edit_details']))->execute();
             } else {
                 $this->js()->univ()->errorMessage('Action "'.$this->posible_actions['edit_details']['name'].'" is not allowed')->execute();
             }
@@ -143,29 +140,44 @@ class Grid_Quotes extends Grid {
         $this->removeColumn('currency');
         $this->removeColumn('spent_time');
         $this->removeColumn('estimated');
-        if ($this->api->currentUser()->isClient()){
+        $this->removeColumn('status');
+        $this->removeColumn('client_email');
+        $this->removeColumn('calc_rate');
+        $this->removeColumn('duration');
+        $this->removeColumn('durdead');
+        $this->removeColumn('issued');
+        $this->removeColumn('amount');
+        $this->removeColumn('html');
+        $this->removeColumn('deleted');
+        $this->removeColumn('organisation');
+        $this->removeColumn('updated_dts');
+        $this->removeColumn('client_id');
+        $this->removeColumn('rate');
+        $this->removeColumn('pr_name');
+        $this->removeColumn('project_name');
+        if (!$this->app->model_user_rights->canSeeTime()){
             $this->removeColumn('show_time_to_client');
         }
         // add columns after model columns
         $this->addColumn('actions');
 
         // formatters
-        $this->addFormatter('status','wrap');
-        $this->addFormatter('status','status');
+//        $this->addFormatter('status','wrap');
+//        $this->addFormatter('status','status');
+        $this->setFormatter('actions','nowrap');
 
-        $this->addPaginator(25);
+	    $this->addPaginator(25);
     }
     function formatRow() {
     	parent::formatRow();
     	//$this->js('click')->_selector('[data-id='.$this->current_row['id'].']')->univ()->redirect($this->current_row['id']);
 
         $this->current_row_html['quotation'] =
-                '<div class="quote_name"><a href="'.$this->api->url('quotes/rfq/requirements',array(
-                    'quote_id'=>$this->current_row['id']
-                )).'">'.$this->current_row['name'].'</a></div>'.
+                '<div class="quote_name"><a href="'.$this->api->url('/quotes/'.$this->current_row['id']
+                ).'">'.$this->current_row['name'].'</a></div>'.
                 '<div class="quote_project"><span>Project:</span>'.$this->current_row['project'].'</div>'
         ;
-        if (!$this->api->currentUser()->isClient()){
+        if (!$this->app->model_user_rights->canSeeTime()){
             $this->current_row_html['quotation'] .=
                     '<div class="quote_client"><span>User:</span>'.$this->current_row['user'].'</div>'
             ;
@@ -205,11 +217,11 @@ class Grid_Quotes extends Grid {
             $this->current_row['estimpay'] = '-';
         }
 
-        if ($this->api->currentUser()->isClient() && !$this->current_row['show_time_to_client']){
+        if ($this->app->model_user_rights->canSeeTime() && !$this->current_row['show_time_to_client']){
             $this->current_row_html['estimate_info'] =
                     '<div class="quote_estimpay"><span>Est.pay:</span>'.$this->current_row['estimpay'].'</div>'
             ;
-        }elseif($this->api->currentUser()->canSeeFinance()){
+        }elseif($this->app->model_user_rights->canSeeFinance()){
             $this->current_row_html['estimate_info'] =
                 '<div class="quote_estimated"><span>Est.time:</span>'.$this->current_row['estimated'].'</div>'.
                 '<div class="quote_rate"><span>Rate:</span>'.$this->current_row['rate'].'</div>'.
@@ -225,13 +237,20 @@ class Grid_Quotes extends Grid {
 
         // actions
         $v = $this->add('View','action_'.$this->current_id,'content');
+	    if($this->current_row['is_archived']){
+		    $this->allowed_actions = ['archive'];
+	    }
+
         foreach ($this->allowed_actions as $action) {
             if (
                 in_array($this->current_row['status'], $this->posible_actions[$action]['status']) ||
                 in_array('any', $this->posible_actions[$action]['status'])
             ) {
-                $v->add('View')->set($this->posible_actions[$action]['name'])->addClass('a_look')
-                        ->js('click')->univ()->ajaxec($this->api->url(null,array($this->posible_actions[$action]['get_var']=>$this->current_id)));
+                $v->add('View')
+	                ->set($this->posible_actions[$action]['name'])
+	                ->addClass('a_look')
+                    ->js('click')->univ()
+	                ->ajaxec($this->api->url(null,array($this->posible_actions[$action]['get_var']=>$this->current_id)));
             }
         }
         $this->current_row_html['actions'] = $v->getHTML();
@@ -240,32 +259,32 @@ class Grid_Quotes extends Grid {
     	switch($this->current_row[$field]){
     		case 'Quotation Requested':
     			$this->current_row_html[$field] = 'Quotation requested';
-    			$this->row_t->setHTML('painted','quotation_requested');
+    			// $this->row_t->set('painted','quotation_requested');
     			break;
     		case 'Estimate Needed':
     			$this->current_row_html[$field] = 'Estimate needed';
-    			$this->row_t->setHTML('painted','estimate_needed');
+    			// $this->row_t->set('painted','estimate_needed');
     			break;
    			case 'Not Estimated':
    				$this->current_row_html[$field] = 'Not estimated';
-    			$this->row_t->setHTML('painted','not_estimated');
+    			// $this->row_t->set('painted','not_estimated');
    				break;
 			case 'Estimated':
 				$this->current_row_html[$field] = 'Estimated';
-    			$this->row_t->setHTML('painted','estimated');
+    			// $this->row_t->set('painted','estimated');
 				break;
 			case 'Estimation Approved':
 				$this->current_row_html[$field] = 'Estimation approved';
-    			$this->row_t->setHTML('painted','estimation_approved');
+    			// $this->row_t->set('painted','estimation_approved');
 				break;
 			case 'Finished':
 				$this->current_row_html[$field] = 'Finished';
-    			$this->row_t->setHTML('painted','finished');
+    			// $this->row_t->set('painted','finished');
 				break;
     						
     		default:
     			$this->current_row_html[$field] = $this->current_row[$field];
-    			$this->row_t->setHTML('painted','');
+    			// $this->row_t->set('painted','');
     			break;
     	}
     }
@@ -273,12 +292,12 @@ class Grid_Quotes extends Grid {
     	echo $this->current_row['duration'];
     }
 
-    function defaultTemplate() {
-    	return array('grid/colored');
-    }
+//    function defaultTemplate() {
+//    	return array('grid/colored');
+//    }
    
     function precacheTemplate() {
-    	$this->row_t->trySetHTML('painted', '<?$painted?>');
+    	$this->row_t->trySetHTML('painted', '{$painted}');
     	parent::precacheTemplate();
     }
 }
