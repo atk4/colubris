@@ -30,7 +30,7 @@ $s1->task('cmd','mkdir -m 777 ./shared/upload');
 $s1->task('cmd','mkdir -m 755 ./releases');
 $s1->task('cmd',"mkdir releases/$server_deploy_folder");
 $s1->task('cmd',"ls -la releases/");
-$s1->task('cmd',"git clone -b 4.3 git@github.com:alexeyostapets/colubris.git ./releases/$server_deploy_folder");
+$s1->task('cmd',"git clone -b master git@github.com:alexeyostapets/colubris.git ./releases/$server_deploy_folder");
 $s1->task('cmd',"cd releases/$server_deploy_folder");
 //$s1->task('cmd',"git fetch");
 //$s1->task('cmd',"git checkout -b 4.3 origin/4.3");
