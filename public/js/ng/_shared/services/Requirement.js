@@ -113,8 +113,9 @@ app_module.service( 'Requirement', [ '$rootScope','$http','API', function( $root
             console.log('------> Show');
             $rootScope.$broadcast('form.to_fixed_position',service.requirements[index]);
         },
-        saveOrder: function(element,attr) {
+        saveOrder: function(element,attr,quote) {
             console.log('------> saveOrder');
+            console.log( quote );
 
             var ids = '';
             $('#'+element+' tr').each(function(i,e){
@@ -128,7 +129,7 @@ app_module.service( 'Requirement', [ '$rootScope','$http','API', function( $root
 
             console.log(ids);
 
-            API.updateOrder('requirement','updateOrder',null,{ids:ids},function(obj){console.log('*** order updated');});
+            API.updateOrder('requirement','updateOrder',{quote_id:quote[0].id},{ids:ids},function(obj){console.log('*** order updated');});
 
         },
         cancel: function() {
