@@ -209,7 +209,15 @@ app_module.controller(
                     $scope.calc.color = 'atk-effect-success';
 
                 }
+
+                $('#sortable-reqirements').sortable({
+                    placeholder: "ui-state-highlight",
+                    items: 'tr',
+                    cursor: "move"
+                });
+
                 console.log('requirements.update - end');
+
             });
             $scope.$on( 'comments.update', function( event ) {
                 $scope.comments = Comment.comments;

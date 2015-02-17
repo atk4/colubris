@@ -92,6 +92,29 @@ app_module.service( 'API', [ '$rootScope','$http', function( $rootScope, $http )
         },
 
         /**
+         * @param what      - api page (*required)
+         * @param method    - api method (can be null or undefined)
+         * @param get_args  - Object for GET args (can be null or undefined)
+         * @param callback  - callback function to be executed on success API request  (can be null or undefined)
+         */
+        updateOrder: function(what,method,get_args,post_args,callback) {
+            if (typeof method === 'undefined' || method === null) {
+                method = 'updateOrder';
+            }
+            if (typeof get_args === 'undefined' || get_args === null) {
+                get_args = {};
+            }
+            if (typeof post_args === 'undefined' || post_args === null) {
+                post_args = {};
+            }
+            if (typeof callback === 'undefined' || callback === null) {
+                callback = function(obj) {};
+            }
+            var url = this.prepareUrl(what,method,get_args);
+            this.request(url,'post',post_args,callback);
+        },
+
+        /**
          * @param url      - url to call
          * @param type     - get | post
          * @param args     - Object for GET args (can be null or undefined)
