@@ -22,7 +22,7 @@ trait Helper_Url {
             ];
         }
     }
-    protected function checkPostParameter($name,$can_by_null=false) {
+    protected function checkPostParameter($name,$can_by_null=false) {//TODO This method does not work. Kostua. 17.02.2015
         if (isset($_POST[$name])) {
             return $_POST[$name];
         }

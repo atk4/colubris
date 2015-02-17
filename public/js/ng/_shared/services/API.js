@@ -91,10 +91,13 @@ app_module.service( 'API', [ '$rootScope','$http', function( $rootScope, $http )
             this.request(url,'get',null,callback);
         },
 
+
         /**
+         *
          * @param what      - api page (*required)
          * @param method    - api method (can be null or undefined)
          * @param get_args  - Object for GET args (can be null or undefined)
+         * @param post_args
          * @param callback  - callback function to be executed on success API request  (can be null or undefined)
          */
         updateOrder: function(what,method,get_args,post_args,callback) {

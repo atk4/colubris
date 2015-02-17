@@ -127,7 +127,6 @@ app_module.service( 'Requirement', [ '$rootScope','$http','API', function( $root
 
             });
 
-            console.log(ids);
 
             API.updateOrder('requirement','updateOrder',{quote_id:quote[0].id},{ids:ids},function(obj){console.log('*** order updated');});
 

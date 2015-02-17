@@ -9,6 +9,9 @@ class Model_Requirement extends Model_Auditable {
 		$this->addField('descr')->type('text');
 		$this->addField('estimate');
 		$this->addField('is_included')->defaultValue(false)->type('boolean')->mandatory('required');
+        $this->addField('order');
+
+
 		//$this->add('filestore\Field_File','file_id')->setModel('filestore/File');
 
 		$this->add('filestore/Field_File', array(
