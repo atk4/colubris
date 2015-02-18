@@ -15,7 +15,10 @@ class endpoint_v1_requirement extends Endpoint_v1_General {
     function get_getForQuote() {
         $quote_id = $this->getQuoteId();
         $this->model->prepareForSelect($this->app->current_user);
-        $this->model->addCondition('quote_id',$quote_id)->addCondition('is_deleted',false);
+        $this->model
+            ->addCondition('quote_id',$quote_id)
+            ->addCondition('is_deleted',false)
+            ->setOrder('order',false);
         try{
             $data = $this->model->getRows();
             return[
@@ -40,6 +43,9 @@ class endpoint_v1_requirement extends Endpoint_v1_General {
         return $quote_id;
     }
 
+    /**
+     * @return array
+     */
     public function post_updateOrder(){
         $quote_id = $this->checkGetParameter('quote_id');
         $ids = $this->getFancyPost();
@@ -57,10 +63,8 @@ class endpoint_v1_requirement extends Endpoint_v1_General {
             foreach ($this->model as $row) {
                 $row->set('order',$ids_arr[$row->id])->saveAndUnload();
             }
-            $data = $this->model->prepareForSelect($this->app->current_user)->getRows();//TODO this returns nothing
             return[
                 'result' => 'success',
-                'data'   => $data,
             ];
         }catch (Exception $e){
             return[

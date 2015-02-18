@@ -97,7 +97,7 @@ class Model_Requirement extends Model_Auditable {
         $fields = ['id'];
 
         if($r->canSeeQuotes($u['id'])){
-            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments');
+            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments','order');
         }else{
             throw $this->exception('This User cannot see projects','API_CannotSee');
         }
@@ -111,7 +111,7 @@ class Model_Requirement extends Model_Auditable {
         $fields = ['id'];
 
         if($r->canAddRequirement($u['id'])){
-            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments');
+            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments','order');
         }else{
             throw $this->exception('This User cannot add projects','API_CannotAdd');
         }
@@ -132,7 +132,7 @@ class Model_Requirement extends Model_Auditable {
         $fields = ['id'];
 
         if($r->canEditRequirement($u['id'])){
-            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments');
+            $fields = array('id','quote_id','quote','user_id','user','name','descr','estimate','is_included','file_id','file','is_deleted','deleted_id','deleted','project_id','project_name','spent_time','count_comments','order');
         }else{
             throw $this->exception('This User cannot edit quotes','API_CannotEdit');
         }
