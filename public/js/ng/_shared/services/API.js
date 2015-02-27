@@ -200,7 +200,7 @@ app_module.service( 'API', [ '$rootScope','$http', function( $rootScope, $http )
             if (!Date.now) {
                 Date.now = function() { return new Date().getTime(); }
             }
-            return Date.now;
+            return Date.now();
         },
         /**
          * Form validation
