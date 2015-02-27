@@ -191,9 +191,16 @@ app_module.service( 'API', [ '$rootScope','$http', function( $rootScope, $http )
                 url = url + key + '=' + value + '&';
                 count++;
             });
+            url = url + 'random_number=' + this.getTimestamp() + '&';
             // TODO Token from cookie
             url = url + 'lhash=' + app_module.lhash;
             return url;
+        },
+        getTimestamp: function() {
+            if (!Date.now) {
+                Date.now = function() { return new Date().getTime(); }
+            }
+            return Date.now;
         },
         /**
          * Form validation
